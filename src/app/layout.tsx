@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReactNode } from "react";
 import Header from "@/components/Header";
 import Menu from "@/components/Menu";
+import Providers from "./providers"; // 👈 Import the client wrapper
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,22 +24,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* ===== Shop Layout Wrapper ===== */}
-        <div className="min-h-screen bg-gray-100 flex flex-col">
-          {/* ===== Header ===== */}
-          <Header />
-
-          {/* ===== Page content ===== */}
-          <main className="flex-1 flex justify-center">
-            <div className="w-full max-w-7xl px-4 py-6">{children}</div>
-          </main>
-
-          {/* ===== Bottom Menu ===== */}
-          <Menu />
-        </div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Providers> {/* 👈 Wrap children with Providers */}
+          <div className="min-h-screen bg-gray-100 flex flex-col">
+            <Header />
+            <main className="flex-1 flex justify-center">
+              <div className="w-full max-w-7xl px-4 py-6">{children}</div>
+            </main>
+            <Menu />
+          </div>
+        </Providers>
       </body>
     </html>
   );

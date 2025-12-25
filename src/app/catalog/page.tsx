@@ -1,5 +1,6 @@
 import CatalogPage from "./components/CatalogPage";
 import { getPublicProducts } from "@/features/products/product.service";
+import Menu from "@/components/Menu";
 
 export const revalidate = 30;
 
@@ -36,18 +37,25 @@ export default async function Page({
   const filters = normalizeFilters(await searchParams);
   const result = await getPublicProducts(filters);
 
-  const pagination = result.success
+  const pagination = result.success && result.data?.total && result.data?.limit
     ? {
         page: result.data?.page,
-        totalPages: Math.ceil(result.data?.total / result.data?.limit),
+        totalPages: Math.ceil(result.data.total / result.data.limit),
       }
     : undefined;
 
+  const products = result.success
+    ? (result.data?.items ?? []).filter((item) => item.category !== null) as CustomerProduct[]
+    : [];
+
   return (
-    <CatalogPage
-      products={result.success ? result.data?.items : []}
-      pagination={pagination}
-      filters={filters}
-    />
+    <>
+      <CatalogPage
+        products={products}
+        pagination={pagination}
+      />
+      <Menu />
+    </>
+
   );
 }
