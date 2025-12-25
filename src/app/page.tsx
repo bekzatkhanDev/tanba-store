@@ -1,65 +1,108 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import ProductCard from "@/app/catalog/components/ProductCard";
+
+
+
+export default function HomePage() {
+  const [items, setItems] = useState<CustomerProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        limit: "8",
+        page: "1",
+      });
+
+      const res = await fetch(`/api/products?${params.toString()}`, {
+        cache: "no-store",
+      });
+
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Ошибка загрузки");
+
+      setItems(json.data.items ?? []);
+    } catch (e) {
+      console.error(e);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-white">
+      {/* HERO */}
+      <section className="px-6 py-16 text-center border-b bg-gradient-to-b from-gray-50 to-white">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          Добро пожаловать в Tanba Store
+        </h1>
+        <p className="text-gray-600 max-w-xl mx-auto mb-6">
+          Магазин качественных товаров с быстрой доставкой и удобной оплатой.
+        </p>
+
+        <Link
+          href="/catalog"
+          className="inline-block bg-black text-white px-6 py-3 rounded text-lg"
+        >
+          Перейти в каталог
+        </Link>
+      </section>
+
+      {/* NEW PRODUCTS */}
+      <section className="px-6 py-12 max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl md:text-2xl font-semibold">Новинки</h2>
+          <Link
+            href="/catalog"
+            className="text-sm text-gray-600 hover:underline"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Смотреть все →
+          </Link>
         </div>
-      </main>
-    </div>
+
+        {loading ? (
+          <div className="text-gray-600">Загрузка...</div>
+        ) : items.length === 0 ? (
+          <div className="text-gray-600">Товары отсутствуют</div>
+        ) : (
+          <div
+            className="
+              grid
+              grid-cols-1        /* 📱 mobile: 1 карточка */
+              sm:grid-cols-2     /* tablet */
+              md:grid-cols-3     /* laptop */
+              lg:grid-cols-4     /* desktop */
+              gap-4
+            "
+          >
+            {items.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* MORE CTA */}
+      <section className="px-6 py-16 text-center border-t">
+        <h3 className="text-xl font-semibold mb-4">
+          Хотите посмотреть больше?
+        </h3>
+        <Link
+          href="/catalog"
+          className="bg-black text-white px-6 py-3 rounded text-lg"
+        >
+          Открыть каталог
+        </Link>
+      </section>
+    </main>
   );
 }
